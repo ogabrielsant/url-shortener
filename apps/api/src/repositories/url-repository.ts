@@ -48,6 +48,32 @@ export const urlRepository = {
     return longUrl;
   },
 
+  async findAll(
+    pageSize = 10,
+    pagingState?: string,
+  ): Promise<{ urls: UrlRecord[]; nextPage: string | null }> {
+    const result = await client.execute(
+      "SELECT shortcode, long_url, created_at FROM url",
+      [],
+      {
+        prepare: true,
+        fetchSize: pageSize,
+        pageState: pagingState ?? undefined,
+      },
+    );
+
+    const urls: UrlRecord[] = result.rows.map((row) => ({
+      shortcode: row.shortcode as string,
+      longUrl: row.long_url as string,
+      createdAt: row.created_at as Date,
+    }));
+
+    return {
+      urls,
+      nextPage: result.pageState ? result.pageState.toString() : null,
+    };
+  },
+
   async exists(shortcode: string): Promise<boolean> {
     const result = await client.execute(
       "SELECT shortcode FROM url WHERE shortcode = ?",

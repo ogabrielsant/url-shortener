@@ -1,5 +1,5 @@
 import redis from "../lib/redis";
-import { urlRepository } from "../repositories/url-repository";
+import { type UrlRecord, urlRepository } from "../repositories/url-repository";
 import { salt, toBase62 } from "./hash-service";
 
 const REDIS_COUNTER_KEY = "url:counter";
@@ -9,8 +9,7 @@ const MAX_COLLISION_ATTEMPTS = 5;
 export const urlService = {
   async shorten(longUrl: string): Promise<string> {
     const id = await redis.incr(REDIS_COUNTER_KEY);
-
-    let shortcode = toBase62(BigInt(id));
+    const shortcode = toBase62(BigInt(id));
 
     for (let attempt = 0; attempt <= MAX_COLLISION_ATTEMPTS; attempt++) {
       const candidate = attempt === 0 ? shortcode : salt(shortcode, attempt);
@@ -18,7 +17,7 @@ export const urlService = {
       const collision = await urlRepository.exists(candidate);
 
       if (!collision) {
-        urlRepository.save(shortcode, longUrl);
+        await urlRepository.save(candidate, longUrl);
 
         return `${BASE_URL}/${candidate}`;
       }
@@ -26,18 +25,21 @@ export const urlService = {
       console.warn(
         `[url-service] - collision detected with candidate "${candidate}" (attempt ${attempt})`,
       );
-
-      if (attempt === MAX_COLLISION_ATTEMPTS) {
-        throw new Error(
-          "Error while generating a new unique shortcode. Max attempts reached.",
-        );
-      }
     }
 
-    throw new Error("Unexpected error.");
+    throw new Error(
+      "Error while generating a new unique shortcode. Max attempts reached.",
+    );
   },
 
   async resolve(shortcode: string): Promise<string | null> {
     return urlRepository.findByShortcode(shortcode);
+  },
+
+  async findAll(
+    pageSize = 20,
+    pagingState?: string,
+  ): Promise<{ urls: UrlRecord[]; nextPage: string | null }> {
+    return urlRepository.findAll(pageSize, pagingState);
   },
 };

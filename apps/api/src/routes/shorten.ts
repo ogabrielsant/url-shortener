@@ -17,7 +17,7 @@ export const shorten: FastifyPluginAsyncZod = async (app) => {
         }),
         response: {
           201: z.object({
-            short_url: z.url(),
+            shortUrl: z.url(),
           }),
         },
       },
@@ -27,8 +27,10 @@ export const shorten: FastifyPluginAsyncZod = async (app) => {
 
       const shortUrl = await urlService.shorten(url);
 
+      console.log(shortUrl);
+
       return response.status(201).send({
-        short_url: shortUrl,
+        shortUrl,
       });
     },
   );

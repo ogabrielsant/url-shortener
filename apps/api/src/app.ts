@@ -1,4 +1,5 @@
 import fastify from "fastify";
+import cors from "@fastify/cors";
 import {
   serializerCompiler,
   validatorCompiler,
@@ -9,6 +10,7 @@ import { connectCassandra } from "./lib/cassandra";
 import { connectRedis } from "./lib/redis";
 import { redirect } from "./routes/redirect";
 import { shorten } from "./routes/shorten";
+import { findAllUrls } from "./routes/find-all-urls";
 
 const app = fastify().withTypeProvider<ZodTypeProvider>();
 
@@ -19,8 +21,9 @@ async function start() {
   await connectCassandra();
   await connectRedis();
 
-  await app.register(redirect);
-  await app.register(shorten);
+  await app.register(cors);
+
+  await app.register(redirect).register(shorten).register(findAllUrls);
 
   app.get("/health", async () => ({ status: "ok" }));
 
