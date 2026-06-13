@@ -1,6 +1,8 @@
 services:
   nginx:
-    image: nginx:alpine
+    build:
+      context: ..
+      dockerfile: apps/app/Dockerfile
     ports:
       - "80:80"
     volumes:

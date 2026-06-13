@@ -21,9 +21,22 @@ async function start() {
   await connectCassandra();
   await connectRedis();
 
-  await app.register(cors);
+  await app.register(cors, {
+    origin: process.env.CORS_ORIGIN ?? "http://localhost",
+    methods: ["GET", "POST"],
+  });
 
-  await app.register(redirect).register(shorten).register(findAllUrls);
+  await app.register(
+    async (api) => {
+      await api.register(shorten);
+      await api.register(findAllUrls);
+    },
+    {
+      prefix: "/api",
+    },
+  );
+
+  await app.register(redirect);
 
   app.get("/health", async () => ({ status: "ok" }));
 

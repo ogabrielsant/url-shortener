@@ -7,7 +7,7 @@ import arrowLeftIcon from "../assets/arrow-left-icon.svg";
 import arrowRightIcon from "../assets/arrow-right-icon.svg";
 
 export function UrlList() {
-  const [pagingState, setPagingState] = useState<string | null>(null);
+  const [pagingState, setPagingState] = useState<string | undefined>(undefined);
 
   const query = useQuery({
     queryKey: ["get-urls", pagingState],
@@ -15,11 +15,13 @@ export function UrlList() {
   });
 
   function handleFirstPage() {
-    setPagingState(null);
+    setPagingState(undefined);
   }
 
   function handleNextPage() {
-    setPagingState(query.data.nextPage);
+    if (query.data && query.data.nextPage) {
+      setPagingState(query.data.nextPage);
+    }
   }
 
   return (

@@ -18,7 +18,7 @@ export async function getShortedUrls({
   pageSize,
   pagingState,
 }: GetShortedUrlsRequest): Promise<GetShortedUrlsResponse> {
-  const url = new URL("http://localhost:3333/urls");
+  const url = new URL("/api/urls", window.location.origin);
 
   if (pageSize) {
     url.searchParams.append("pageSize", pageSize.toString());

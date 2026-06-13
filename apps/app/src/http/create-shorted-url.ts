@@ -9,7 +9,7 @@ type CreateShortUrlsResponse = {
 export async function createShortUrl({
   url,
 }: CreateShortUrlsRequest): Promise<CreateShortUrlsResponse> {
-  const response = await fetch("http://localhost:3333/shorten", {
+  const response = await fetch("/api/shorten", {
     headers: {
       "Content-Type": "application/json",
     },

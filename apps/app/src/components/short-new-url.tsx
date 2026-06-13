@@ -1,13 +1,18 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
 import { createShortUrl } from "../http/create-shorted-url";
 
 export function ShortNewUrl() {
   const [url, setUrl] = useState<string>("");
 
+  const queryClient = useQueryClient();
+
   const { mutateAsync, isPending } = useMutation({
     mutationKey: ["short-new-url"],
     mutationFn: createShortUrl,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["get-urls"] });
+    },
   });
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
